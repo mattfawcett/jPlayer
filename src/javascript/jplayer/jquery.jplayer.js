@@ -2768,6 +2768,14 @@
 			}
 		},
 		_updateAutohide: function() {
+			if(this.options.fullWindow) {
+				var autohide = this.options.autohide.full;
+			} else {
+				var autohide = this.options.autohide.restored;
+			}
+			//ensure autohide is always a function so it can be interacted in same way
+			if(typeof autohide != 'function') autohide = function() { return autohide; };
+
 			var	self = this,
 				event = "mousemove.jPlayer",
 				namespace = ".jPlayerAutohide",
@@ -2793,7 +2801,9 @@
 						self.css.jq.gui.fadeIn(self.options.autohide.fadeIn, function() {
 							clearTimeout(self.internal.autohideId);
 							self.internal.autohideId = setTimeout( function() {
-								self.css.jq.gui.fadeOut(self.options.autohide.fadeOut);
+								if(autohide.apply(this)) {
+									self.css.jq.gui.fadeOut(self.options.autohide.fadeOut);
+								}
 							}, self.options.autohide.hold);
 						});
 					}
@@ -2814,7 +2824,7 @@
 				this.css.jq.gui.unbind(namespace);
 
 				if(!this.status.nativeVideoControls) {
-					if(this.options.fullWindow && this.options.autohide.full || !this.options.fullWindow && this.options.autohide.restored) {
+					if(autohide.apply(this)) {
 						this.element.bind(eventType, handler);
 						this.css.jq.gui.bind(eventType, handler);
 						this.css.jq.gui.hide();
